@@ -1,10 +1,7 @@
 import os
-import sys
 import subprocess
 import threading
 from flask import Flask, render_template, request, jsonify, send_from_directory
-
-sys.path.insert(0, os.path.expanduser("~/Library/Python/3.9/lib/python/site-packages"))
 from faster_whisper import WhisperModel
 
 app = Flask(__name__)
@@ -37,10 +34,18 @@ def convert_to_wav(filepath, wav_name):
     return wav_path
 
 
-def transcribe_wav(wav_path):
-    """Transcribir WAV con faster-whisper + VAD ultra-sensible."""
-    m = get_model()
-    segments, info = m.transcribe(
+def get_audio_duration(filepath):
+    result = subprocess.run(
+        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+         "-of", "default=noprint_wrappers=1:nokey=1", filepath],
+        capture_output=True, text=True
+    )
+    return float(result.stdout.strip())
+
+
+def transcribe_single_pass(m, wav_path):
+    """Transcribir con VAD ultra-sensible (funciona para WAV, MP4, FLAC, OPUS)."""
+    segments, _ = m.transcribe(
         wav_path,
         language="es",
         beam_size=5,
@@ -60,6 +65,62 @@ def transcribe_wav(wav_path):
         if text:
             parts.append(text)
     return " ".join(parts)
+
+
+def transcribe_chunked(m, wav_path):
+    """Transcribir en trozos de 25s — cada trozo < 30s = una sola ventana de Whisper.
+    Usado para MP3 donde el mecanismo de seek de Whisper falla."""
+    import shutil
+    duration = get_audio_duration(wav_path)
+    chunk_dir = wav_path + "_chunks"
+    os.makedirs(chunk_dir, exist_ok=True)
+
+    FIRST_CHUNK = 3   # Primer trozo ultra-corto: solo la intro
+    CHUNK = 25        # Resto: 25s cada uno
+    OVERLAP = 2       # 2s de solapamiento
+
+    try:
+        parts = []
+        start = 0.0
+        idx = 0
+        while start < duration:
+            # Primer trozo: solo 10s. Resto: 25s
+            chunk_len = FIRST_CHUNK if idx == 0 else CHUNK
+            chunk_path = os.path.join(chunk_dir, f"c_{idx:04d}.wav")
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", wav_path,
+                 "-ss", str(start), "-t", str(chunk_len),
+                 "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le",
+                 chunk_path],
+                capture_output=True
+            )
+            segments, _ = m.transcribe(
+                chunk_path,
+                language="es",
+                beam_size=5,
+                word_timestamps=True,
+                vad_filter=False,
+                condition_on_previous_text=False,
+            )
+            for seg in segments:
+                text = seg.text.strip()
+                if text:
+                    parts.append(text)
+            # Primer trozo avanza solo 8s (2s overlap con el segundo)
+            start += (FIRST_CHUNK - OVERLAP) if idx == 0 else CHUNK
+            idx += 1
+
+        return " ".join(parts)
+    finally:
+        shutil.rmtree(chunk_dir, ignore_errors=True)
+
+
+def transcribe_wav(wav_path, is_mp3=False):
+    """Transcribir WAV. MP3 usa trozos de 25s, el resto usa VAD."""
+    m = get_model()
+    if is_mp3:
+        return transcribe_chunked(m, wav_path)
+    return transcribe_single_pass(m, wav_path)
 
 
 def process_queue():
@@ -82,7 +143,7 @@ def process_queue():
             wav_path = convert_to_wav(filepath, wav_name)
             with queue_lock:
                 t["wav_name"] = wav_name
-            text = transcribe_wav(wav_path)
+            text = transcribe_wav(wav_path, is_mp3=t["filename"].lower().endswith(".mp3"))
             with queue_lock:
                 t["status"] = "done"
                 t["text"] = text
