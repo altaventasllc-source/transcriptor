@@ -37,7 +37,6 @@
             font-size: 14px;
         }
 
-        /* Upload Zone */
         .upload-zone {
             border: 2px dashed #333;
             border-radius: 16px;
@@ -54,10 +53,7 @@
             background: #16152a;
         }
 
-        .upload-zone .icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
+        .upload-zone .icon { font-size: 48px; margin-bottom: 12px; }
 
         .upload-zone h3 {
             font-size: 18px;
@@ -65,16 +61,9 @@
             margin-bottom: 8px;
         }
 
-        .upload-zone p {
-            color: #666;
-            font-size: 13px;
-        }
+        .upload-zone p { color: #666; font-size: 13px; }
+        .upload-zone input { display: none; }
 
-        .upload-zone input {
-            display: none;
-        }
-
-        /* Results */
         .results-header {
             display: flex;
             justify-content: space-between;
@@ -82,15 +71,8 @@
             margin-bottom: 16px;
         }
 
-        .results-header h2 {
-            font-size: 18px;
-            color: #fff;
-        }
-
-        .results-header .count {
-            color: #888;
-            font-size: 13px;
-        }
+        .results-header h2 { font-size: 18px; color: #fff; }
+        .results-header .count { color: #888; font-size: 13px; }
 
         .item {
             background: #111118;
@@ -101,9 +83,7 @@
             transition: border-color 0.2s;
         }
 
-        .item:hover {
-            border-color: #2a2a3e;
-        }
+        .item:hover { border-color: #2a2a3e; }
 
         .item-header {
             display: flex;
@@ -120,9 +100,7 @@
             flex-shrink: 0;
         }
 
-        .item.open .item-header .arrow {
-            transform: rotate(90deg);
-        }
+        .item.open .item-header .arrow { transform: rotate(90deg); }
 
         .item-header .name {
             flex: 1;
@@ -141,40 +119,15 @@
             flex-shrink: 0;
         }
 
-        .status.pending {
-            background: #2a2520;
-            color: #f0a030;
-        }
+        .status.pending { background: #2a2520; color: #f0a030; }
+        .status.processing { background: #1a2030; color: #60a0f0; animation: pulse 1.5s infinite; }
+        .status.done { background: #152515; color: #50c050; }
+        .status.error { background: #2a1515; color: #f06060; }
 
-        .status.processing {
-            background: #1a2030;
-            color: #60a0f0;
-            animation: pulse 1.5s infinite;
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        .status.done {
-            background: #152515;
-            color: #50c050;
-        }
-
-        .status.error {
-            background: #2a1515;
-            color: #f06060;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .item-body {
-            display: none;
-            padding: 0 20px 16px 48px;
-        }
-
-        .item.open .item-body {
-            display: block;
-        }
+        .item-body { display: none; padding: 0 20px 16px 48px; }
+        .item.open .item-body { display: block; }
 
         .item-body .text {
             font-size: 14px;
@@ -184,10 +137,7 @@
             margin-bottom: 14px;
         }
 
-        .item-body .actions {
-            display: flex;
-            gap: 8px;
-        }
+        .item-body .actions { display: flex; gap: 8px; }
 
         .btn {
             padding: 8px 16px;
@@ -199,27 +149,11 @@
             transition: all 0.2s;
         }
 
-        .btn-copy {
-            background: #6c5ce7;
-            color: #fff;
-        }
-
-        .btn-copy:hover {
-            background: #7d6ff0;
-        }
-
-        .btn-copy.copied {
-            background: #50c050;
-        }
-
-        .btn-delete {
-            background: #1e1e2e;
-            color: #f06060;
-        }
-
-        .btn-delete:hover {
-            background: #2a1520;
-        }
+        .btn-copy { background: #6c5ce7; color: #fff; }
+        .btn-copy:hover { background: #7d6ff0; }
+        .btn-copy.copied { background: #50c050; }
+        .btn-delete { background: #1e1e2e; color: #f06060; }
+        .btn-delete:hover { background: #2a1520; }
 
         .audio-player {
             width: 100%;
@@ -228,21 +162,11 @@
             outline: none;
         }
 
-        .audio-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 6px;
-        }
+        .audio-label { font-size: 12px; color: #666; margin-bottom: 6px; }
 
-        .empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: #444;
-        }
-
+        .empty { text-align: center; padding: 60px 20px; color: #444; }
         .empty .icon { font-size: 40px; margin-bottom: 10px; }
 
-        /* Loading bar */
         .loading-bar {
             display: none;
             height: 3px;
@@ -321,7 +245,6 @@
         const loadingBar = document.getElementById('loadingBar');
         let polling = false;
 
-        // Drag & drop
         uploadZone.addEventListener('click', () => fileInput.click());
         uploadZone.addEventListener('dragover', e => {
             e.preventDefault();
@@ -391,7 +314,6 @@
 
             const doneCount = entries.filter(([,t]) => t.status === 'done').length;
 
-            // Preserve open states
             const openStates = {};
             document.querySelectorAll('.item').forEach(el => {
                 openStates[el.dataset.id] = el.classList.contains('open');
@@ -415,12 +337,12 @@
                     <div class="item-header" onclick="toggleItem(this)">
                         <span class="arrow">▶</span>
                         <span class="name">${t.filename}</span>
-                        <span class="status ${t.status}">${statusLabels[t.status]}</span>
+                        <span class="status ${t.status}">${statusLabels[t.status] || t.status}</span>
                     </div>
                     <div class="item-body">`;
 
                 if (t.status === 'done') {
-                    html += `<div class="audio-label">Audio procesado por Whisper:</div>
+                    html += `<div class="audio-label">Audio procesado:</div>
                         <audio class="audio-player" controls preload="none" src="/audio/${encodeURIComponent(tid)}"></audio>
                         <div class="text">${escapeHtml(t.text)}</div>
                         <div class="actions">
@@ -433,7 +355,7 @@
                             <button class="btn btn-delete" onclick="deleteItem('${tid}')">Eliminar</button>
                         </div>`;
                 } else if (t.status === 'processing') {
-                    html += `<div class="text" style="color:#60a0f0">Procesando audio... esto puede tardar unos minutos.</div>`;
+                    html += `<div class="text" style="color:#60a0f0">Transcribiendo audio... esto puede tardar unos minutos.</div>`;
                 } else {
                     html += `<div class="text" style="color:#f0a030">Esperando turno...</div>`;
                 }
@@ -474,7 +396,6 @@
             return div.innerHTML;
         }
 
-        // Cargar estado al inicio
         fetch('/status').then(r => r.json()).then(data => {
             renderResults(data);
             const hasActive = Object.values(data).some(
