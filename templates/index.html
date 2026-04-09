@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcriptor Antigravity</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed #333;
+            border-radius: 16px;
+            padding: 50px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #111118;
+            margin-bottom: 30px;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #6c5ce7;
+            background: #16152a;
+        }
+
+        .upload-zone .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-zone h3 {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .upload-zone p {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        /* Results */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .results-header h2 {
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .results-header .count {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .item {
+            background: #111118;
+            border: 1px solid #1e1e2e;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .item:hover {
+            border-color: #2a2a3e;
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            gap: 14px;
+        }
+
+        .item-header .arrow {
+            color: #555;
+            font-size: 12px;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .item.open .item-header .arrow {
+            transform: rotate(90deg);
+        }
+
+        .item-header .name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #ddd;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .item-header .status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+
+        .status.pending {
+            background: #2a2520;
+            color: #f0a030;
+        }
+
+        .status.processing {
+            background: #1a2030;
+            color: #60a0f0;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status.done {
+            background: #152515;
+            color: #50c050;
+        }
+
+        .status.error {
+            background: #2a1515;
+            color: #f06060;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .item-body {
+            display: none;
+            padding: 0 20px 16px 48px;
+        }
+
+        .item.open .item-body {
+            display: block;
+        }
+
+        .item-body .text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #bbb;
+            white-space: pre-wrap;
+            margin-bottom: 14px;
+        }
+
+        .item-body .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-copy {
+            background: #6c5ce7;
+            color: #fff;
+        }
+
+        .btn-copy:hover {
+            background: #7d6ff0;
+        }
+
+        .btn-copy.copied {
+            background: #50c050;
+        }
+
+        .btn-delete {
+            background: #1e1e2e;
+            color: #f06060;
+        }
+
+        .btn-delete:hover {
+            background: #2a1520;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin-bottom: 14px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .audio-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #444;
+        }
+
+        .empty .icon { font-size: 40px; margin-bottom: 10px; }
+
+        /* Loading bar */
+        .loading-bar {
+            display: none;
+            height: 3px;
+            background: #1e1e2e;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .loading-bar.active { display: block; }
+
+        .loading-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+            border-radius: 3px;
+            animation: loading 2s ease-in-out infinite;
+        }
+
+        @keyframes loading {
+            0% { width: 0%; margin-left: 0; }
+            50% { width: 60%; margin-left: 20%; }
+            100% { width: 0%; margin-left: 100%; }
+        }
+
+        .formats {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .formats span {
+            background: #1a1a25;
+            color: #666;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Transcriptor Antigravity</h1>
+            <p>Sube audios o videos y obten la transcripcion automatica</p>
+        </header>
+
+        <div class="upload-zone" id="uploadZone">
+            <div class="icon">🎙️</div>
+            <h3>Arrastra archivos aqui o haz clic para seleccionar</h3>
+            <p>Puedes subir varios archivos a la vez</p>
+            <div class="formats">
+                <span>.opus</span>
+                <span>.mp3</span>
+                <span>.mp4</span>
+                <span>.m4a</span>
+                <span>.wav</span>
+                <span>.webm</span>
+                <span>.ogg</span>
+                <span>.flac</span>
+            </div>
+            <input type="file" id="fileInput" multiple accept="audio/*,video/*,.opus,.ogg">
+        </div>
+
+        <div class="loading-bar" id="loadingBar"><div class="fill"></div></div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const resultsDiv = document.getElementById('results');
+        const loadingBar = document.getElementById('loadingBar');
+        let polling = false;
+
+        // Drag & drop
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+        async function handleFiles(files) {
+            if (!files.length) return;
+            const formData = new FormData();
+            for (const f of files) formData.append('files', f);
+
+            loadingBar.classList.add('active');
+
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.ids) startPolling();
+            } catch (err) {
+                alert('Error al subir archivos: ' + err.message);
+            }
+
+            fileInput.value = '';
+        }
+
+        function startPolling() {
+            if (polling) return;
+            polling = true;
+            pollStatus();
+        }
+
+        async function pollStatus() {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                renderResults(data);
+
+                const hasActive = Object.values(data).some(
+                    t => t.status === 'pending' || t.status === 'processing'
+                );
+
+                loadingBar.classList.toggle('active', hasActive);
+
+                if (hasActive) {
+                    setTimeout(pollStatus, 2000);
+                } else {
+                    polling = false;
+                }
+            } catch {
+                polling = false;
+                loadingBar.classList.remove('active');
+            }
+        }
+
+        function renderResults(data) {
+            const entries = Object.entries(data);
+            if (!entries.length) {
+                resultsDiv.innerHTML = '<div class="empty"><div class="icon">📁</div><p>Aun no hay transcripciones</p></div>';
+                return;
+            }
+
+            const doneCount = entries.filter(([,t]) => t.status === 'done').length;
+
+            // Preserve open states
+            const openStates = {};
+            document.querySelectorAll('.item').forEach(el => {
+                openStates[el.dataset.id] = el.classList.contains('open');
+            });
+
+            let html = `<div class="results-header">
+                <h2>Transcripciones</h2>
+                <span class="count">${doneCount} de ${entries.length} completadas</span>
+            </div>`;
+
+            for (const [tid, t] of entries) {
+                const isOpen = openStates[tid] || false;
+                const statusLabels = {
+                    pending: 'En cola',
+                    processing: 'Transcribiendo...',
+                    done: 'Completado',
+                    error: 'Error'
+                };
+
+                html += `<div class="item ${isOpen ? 'open' : ''}" data-id="${tid}">
+                    <div class="item-header" onclick="toggleItem(this)">
+                        <span class="arrow">▶</span>
+                        <span class="name">${t.filename}</span>
+                        <span class="status ${t.status}">${statusLabels[t.status]}</span>
+                    </div>
+                    <div class="item-body">`;
+
+                if (t.status === 'done') {
+                    html += `<div class="audio-label">Audio procesado por Whisper:</div>
+                        <audio class="audio-player" controls preload="none" src="/audio/${encodeURIComponent(tid)}"></audio>
+                        <div class="text">${escapeHtml(t.text)}</div>
+                        <div class="actions">
+                            <button class="btn btn-copy" onclick="copyText(this, '${tid}')">Copiar transcripcion</button>
+                            <button class="btn btn-delete" onclick="deleteItem('${tid}')">Eliminar</button>
+                        </div>`;
+                } else if (t.status === 'error') {
+                    html += `<div class="text" style="color:#f06060">${escapeHtml(t.error)}</div>
+                        <div class="actions">
+                            <button class="btn btn-delete" onclick="deleteItem('${tid}')">Eliminar</button>
+                        </div>`;
+                } else if (t.status === 'processing') {
+                    html += `<div class="text" style="color:#60a0f0">Procesando audio... esto puede tardar unos minutos.</div>`;
+                } else {
+                    html += `<div class="text" style="color:#f0a030">Esperando turno...</div>`;
+                }
+
+                html += `</div></div>`;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function toggleItem(header) {
+            header.parentElement.classList.toggle('open');
+        }
+
+        async function copyText(btn, tid) {
+            const res = await fetch('/status');
+            const data = await res.json();
+            if (data[tid]) {
+                await navigator.clipboard.writeText(data[tid].text);
+                btn.textContent = 'Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar transcripcion';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }
+        }
+
+        async function deleteItem(tid) {
+            await fetch('/delete/' + encodeURIComponent(tid), { method: 'DELETE' });
+            const res = await fetch('/status');
+            renderResults(await res.json());
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cargar estado al inicio
+        fetch('/status').then(r => r.json()).then(data => {
+            renderResults(data);
+            const hasActive = Object.values(data).some(
+                t => t.status === 'pending' || t.status === 'processing'
+            );
+            if (hasActive) startPolling();
+        });
+    </script>
+</body>
+</html>
