@@ -207,6 +207,77 @@
             font-size: 11px;
             font-family: monospace;
         }
+
+        .url-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid #2a2a3e;
+            background: #111118;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .url-input:focus {
+            border-color: #6c5ce7;
+        }
+
+        .url-input::placeholder { color: #555; }
+
+        .btn-url {
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            background: #6c5ce7;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+
+        .btn-url:hover { background: #7d6ff0; }
+        .btn-url:disabled { background: #333; cursor: not-allowed; }
+
+        .url-divider {
+            text-align: center;
+            color: #444;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .status.downloading { background: #1a2530; color: #50b0f0; animation: pulse 1.5s infinite; }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #1e1e2e;
+            border-radius: 3px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -233,6 +304,13 @@
             <input type="file" id="fileInput" multiple accept="audio/*,video/*,.opus,.ogg">
         </div>
 
+        <div class="url-divider">o pega una URL</div>
+
+        <div class="url-section">
+            <input type="text" class="url-input" id="urlInput" placeholder="Pega una URL de YouTube, Instagram, TikTok...">
+            <button class="btn-url" id="urlBtn" onclick="handleUrl()">Transcribir URL</button>
+        </div>
+
         <div class="loading-bar" id="loadingBar"><div class="fill"></div></div>
 
         <div id="results"></div>
@@ -257,6 +335,37 @@
             handleFiles(e.dataTransfer.files);
         });
         fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+        async function handleUrl() {
+            const input = document.getElementById('urlInput');
+            const btn = document.getElementById('urlBtn');
+            const url = input.value.trim();
+            if (!url) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Descargando...';
+            loadingBar.classList.add('active');
+
+            try {
+                const res = await fetch('/url', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url})
+                });
+                const data = await res.json();
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    startPolling();
+                    input.value = '';
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Transcribir URL';
+        }
 
         async function handleFiles(files) {
             if (!files.length) return;
@@ -289,7 +398,7 @@
                 renderResults(data);
 
                 const hasActive = Object.values(data).some(
-                    t => t.status === 'pending' || t.status === 'processing'
+                    t => ['pending', 'downloading', 'processing'].includes(t.status)
                 );
 
                 loadingBar.classList.toggle('active', hasActive);
@@ -328,6 +437,7 @@
                 const isOpen = openStates[tid] || false;
                 const statusLabels = {
                     pending: 'En cola',
+                    downloading: 'Descargando...',
                     processing: 'Transcribiendo...',
                     done: 'Completado',
                     error: 'Error'
@@ -354,8 +464,12 @@
                         <div class="actions">
                             <button class="btn btn-delete" onclick="deleteItem('${tid}')">Eliminar</button>
                         </div>`;
+                } else if (t.status === 'downloading') {
+                    html += `<div class="text" style="color:#50b0f0">Descargando audio de la URL...</div>`;
                 } else if (t.status === 'processing') {
-                    html += `<div class="text" style="color:#60a0f0">Transcribiendo audio... esto puede tardar unos minutos.</div>`;
+                    const pct = t.progress || 0;
+                    html += `<div class="progress-text">Transcribiendo... ${pct}%</div>
+                        <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>`;
                 } else {
                     html += `<div class="text" style="color:#f0a030">Esperando turno...</div>`;
                 }
