@@ -1,49 +1,91 @@
-# 🎙️ Transcriptor Antigravity
+# Transcriptor Antigravity
 
-Transcriptor de audio/vídeo a texto usando inteligencia artificial (Whisper).  
-Sube archivos de audio o vídeo y obtén la transcripción en español.
-
----
-
-## Instalación automática (recomendado)
-
-Si tienes **Antigravity** (la IA), solo tienes que escribir:
-
-```
-/instalar
-```
-
-La IA se encarga de **todo**: comprueba requisitos, instala dependencias, descarga el modelo de IA y arranca la app. No tienes que hacer nada más.
+Transcriptor de audio y video a texto usando inteligencia artificial (faster-whisper).
+Sube archivos, pega una URL de YouTube/Instagram/TikTok, y obtiene la transcripcion en español.
 
 ---
 
-## Instalación manual (alternativa)
+## Funcionalidades
 
-Si prefieres hacerlo a mano:
+- **Subida de archivos**: arrastra o selecciona audios y videos para transcribir
+- **Transcripcion desde URL**: pega un enlace de YouTube, Instagram, TikTok, Twitter, Facebook y mas
+- **Subida en bloque**: sube varios archivos a la vez, se procesan en cola uno a uno
+- **Timestamps opcionales**: activa/desactiva marcas de tiempo [M:SS] en la transcripcion
+- **Reproductor de audio**: escucha el audio procesado directamente en la app
+- **Barra de progreso**: visualiza el porcentaje de transcripcion en tiempo real
+- **Copiar transcripcion**: boton para copiar al portapapeles (con o sin timestamps)
+- **Sin limite de tamaño**: sube archivos de cualquier tamaño
+- **Limpieza automatica**: la carpeta de archivos temporales se borra al reiniciar
+
+## Formatos soportados
+
+**Archivos**: MP3, MP4, WAV, OPUS, FLAC, M4A, WebM, OGG, MOV
+
+**URLs**: YouTube, Instagram, TikTok, Twitter/X, Facebook y +1000 plataformas (via yt-dlp)
+
+---
+
+## Instalacion
 
 ### Requisitos previos
 
-1. **Python 3.9+**: [python.org](https://www.python.org/downloads/) o `brew install python3`
-2. **FFmpeg**: `brew install ffmpeg` (Mac) / `sudo apt install ffmpeg` (Linux)
+1. **Python 3.12+**: `brew install python@3.12` (Mac) / [python.org](https://www.python.org/downloads/) (Windows)
+2. **FFmpeg**: `brew install ffmpeg` (Mac) / `winget install Gyan.FFmpeg` (Windows)
+3. **deno** (necesario para YouTube): `brew install deno` (Mac)
 
 ### Pasos
 
 ```bash
-bash instalar.sh
-source venv/bin/activate
-python3 app.py
+# Clonar el repositorio
+git clone https://github.com/altaventasllc-source/transcriptor.git
+cd transcriptor
+
+# Crear entorno virtual e instalar dependencias
+python3.12 -m venv venv
+source venv/bin/activate        # Mac/Linux
+# venv\Scripts\activate.bat     # Windows
+
+pip install -r requirements.txt
+
+# Ejecutar la app
+python app.py
 ```
 
-Abre **http://localhost:5050** en tu navegador.
+Abrir **http://localhost:5050** en el navegador.
 
 ---
 
-## Formatos soportados
+## Uso
 
-MP3, MP4, WAV, OPUS, FLAC, M4A, WebM, OGG
+### Transcribir archivos
+1. Arrastra archivos a la zona de subida o haz clic para seleccionar
+2. Espera a que se complete la transcripcion (barra de progreso)
+3. Haz clic en la transcripcion para desplegarla
+4. Usa los botones para copiar, activar timestamps o eliminar
+
+### Transcribir desde URL
+1. Pega la URL en el campo de texto
+2. Pulsa "Transcribir URL"
+3. La app descarga el audio automaticamente y lo transcribe
+
+### Timestamps
+- Pulsa el boton "Timestamps" para ver en que momento se dijo cada frase
+- Formato: `[M:SS] texto de la frase`
+- El boton "Copiar" copia la version visible (con o sin timestamps)
+
+---
+
+## Tecnologias
+
+- **faster-whisper**: motor de transcripcion (modelo medium, ejecucion local)
+- **Flask**: servidor web
+- **yt-dlp**: descarga de audio desde URLs
+- **FFmpeg**: conversion y procesamiento de audio
+- **deno**: runtime JS para resolver challenges de YouTube
 
 ## Notas
 
-- **Primera vez**: Se descarga el modelo de IA (~1.5 GB). Solo ocurre una vez.
-- **Tamaño máximo**: 500 MB por archivo.
-- **Idioma**: Español.
+- **Primera vez**: se descarga el modelo de IA (~1.5 GB). Solo ocurre una vez.
+- **Idioma**: español (configurable en `app.py`).
+- **Todo es local**: no se envia nada a ningun servidor externo. La transcripcion se ejecuta en tu ordenador.
+- **Puerto**: la app se ejecuta en `localhost:5050`.
