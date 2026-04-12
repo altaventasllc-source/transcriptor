@@ -48,6 +48,14 @@ def get_audio_duration(filepath):
     return float(result.stdout.strip())
 
 
+def fmt_time(seconds):
+    """Formatear segundos a M:SS o H:MM:SS."""
+    s = int(seconds)
+    if s >= 3600:
+        return f"{s // 3600}:{(s % 3600) // 60:02d}:{s % 60:02d}"
+    return f"{s // 60}:{s % 60:02d}"
+
+
 def transcribe_single_pass(m, wav_path, tid=None):
     """Transcribir con VAD ultra-sensible (funciona para WAV, MP4, FLAC, OPUS)."""
     duration = get_audio_duration(wav_path)
@@ -66,17 +74,18 @@ def transcribe_single_pass(m, wav_path, tid=None):
         condition_on_previous_text=False,
     )
     parts = []
+    timed_parts = []
     for seg in segments:
         text = seg.text.strip()
         if text:
             parts.append(text)
-        # Actualizar progreso
+            timed_parts.append(f"[{fmt_time(seg.start)}] {text}")
         if tid and duration > 0:
             pct = min(int((seg.end / duration) * 100), 99)
             with queue_lock:
                 if tid in transcriptions:
                     transcriptions[tid]["progress"] = pct
-    return " ".join(parts)
+    return " ".join(parts), "\n".join(timed_parts)
 
 
 def transcribe_chunked(m, wav_path, tid=None):
@@ -92,6 +101,7 @@ def transcribe_chunked(m, wav_path, tid=None):
 
     try:
         parts = []
+        timed_parts = []
         start = 0.0
         idx = 0
         while start < duration:
@@ -116,6 +126,8 @@ def transcribe_chunked(m, wav_path, tid=None):
                 text = seg.text.strip()
                 if text:
                     parts.append(text)
+                    # Sumar offset del chunk al timestamp
+                    timed_parts.append(f"[{fmt_time(start + seg.start)}] {text}")
             # Actualizar progreso
             start += (FIRST_CHUNK - OVERLAP) if idx == 0 else CHUNK
             if tid and duration > 0:
@@ -125,13 +137,13 @@ def transcribe_chunked(m, wav_path, tid=None):
                         transcriptions[tid]["progress"] = pct
             idx += 1
 
-        return " ".join(parts)
+        return " ".join(parts), "\n".join(timed_parts)
     finally:
         shutil.rmtree(chunk_dir, ignore_errors=True)
 
 
 def transcribe_wav(wav_path, is_mp3=False, tid=None):
-    """Transcribir WAV. MP3 usa trozos de 25s, el resto usa VAD."""
+    """Transcribir WAV. Devuelve (text, timed_text)."""
     m = get_model()
     if is_mp3:
         return transcribe_chunked(m, wav_path, tid=tid)
@@ -158,10 +170,11 @@ def process_queue():
             wav_path = convert_to_wav(filepath, wav_name)
             with queue_lock:
                 t["wav_name"] = wav_name
-            text = transcribe_wav(wav_path, is_mp3=t["filename"].lower().endswith(".mp3"), tid=tid)
+            text, timed_text = transcribe_wav(wav_path, is_mp3=t["filename"].lower().endswith(".mp3"), tid=tid)
             with queue_lock:
                 t["status"] = "done"
                 t["text"] = text
+                t["timed_text"] = timed_text
                 t["progress"] = 100
         except Exception as e:
             with queue_lock:
@@ -238,10 +251,11 @@ def process_url_item(tid):
             t["wav_name"] = t["stored_name"] + ".wav"
             t["status"] = "processing"
 
-        text = transcribe_wav(wav_path, is_mp3=False, tid=tid)
+        text, timed_text = transcribe_wav(wav_path, is_mp3=False, tid=tid)
         with queue_lock:
             t["status"] = "done"
             t["text"] = text
+            t["timed_text"] = timed_text
             t["progress"] = 100
     except Exception as e:
         with queue_lock:
@@ -278,6 +292,7 @@ def upload():
                 "error": "",
                 "wav_name": "",
                 "progress": 0,
+                "timed_text": "",
             }
         new_ids.append(tid)
 
@@ -326,6 +341,7 @@ def status():
                     "error": t["error"],
                     "wav_name": t.get("wav_name", ""),
                     "progress": t.get("progress", 0),
+                    "timed_text": t.get("timed_text", ""),
                 }
                 for tid, t in transcriptions.items()
             }
