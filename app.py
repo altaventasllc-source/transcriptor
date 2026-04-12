@@ -8,7 +8,7 @@ from faster_whisper import WhisperModel
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
-app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = None
 
 # Limpiar uploads al arrancar para no dejar basura de sesiones anteriores
 if os.path.exists(app.config["UPLOAD_FOLDER"]):
