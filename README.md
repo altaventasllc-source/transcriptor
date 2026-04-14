@@ -27,27 +27,46 @@ Sube archivos, pega una URL de YouTube/Instagram/TikTok, y obtiene la transcripc
 
 ## Instalacion
 
-### Requisitos previos
-
-1. **Python 3.12+**: `brew install python@3.12` (Mac) / [python.org](https://www.python.org/downloads/) (Windows)
-2. **FFmpeg**: `brew install ffmpeg` (Mac) / `winget install Gyan.FFmpeg` (Windows)
-3. **deno** (necesario para YouTube): `brew install deno` (Mac)
-
-### Pasos
+### Mac — Instalacion automatica (recomendado)
 
 ```bash
-# Clonar el repositorio
 git clone https://github.com/altaventasllc-source/transcriptor.git
 cd transcriptor
+bash instalar.sh
+```
 
-# Crear entorno virtual e instalar dependencias
+El script instala todo automaticamente: Homebrew, Python 3.12, FFmpeg, Deno, dependencias y el modelo de IA.
+
+Para ejecutar la app despues de instalar:
+
+```bash
+source venv/bin/activate
+python app.py
+```
+
+### Mac — Instalacion manual
+
+```bash
+brew install python@3.12 ffmpeg deno
+git clone https://github.com/altaventasllc-source/transcriptor.git
+cd transcriptor
 python3.12 -m venv venv
-source venv/bin/activate        # Mac/Linux
-# venv\Scripts\activate.bat     # Windows
-
+source venv/bin/activate
 pip install -r requirements.txt
+python app.py
+```
 
-# Ejecutar la app
+### Windows
+
+```bash
+winget install Python.Python.3.12
+winget install Gyan.FFmpeg
+winget install Git.Git
+git clone https://github.com/altaventasllc-source/transcriptor.git
+cd transcriptor
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
 python app.py
 ```
 
