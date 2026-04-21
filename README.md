@@ -27,7 +27,19 @@ Sube archivos, pega una URL de YouTube/Instagram/TikTok, y obtiene la transcripc
 
 ## Instalacion
 
-### Mac — Instalacion automatica (recomendado)
+### Mac — Con doble clic (mas simple)
+
+1. Descarga o clona este repositorio
+2. Haz **doble clic** en `Instalador_Transcriptor.app`
+3. Se abrira una Terminal con el progreso de la instalacion (tarda 5-10 min la primera vez)
+4. Al terminar, aparece **Transcriptor.app en el Escritorio** con el icono de la app
+5. **Doble clic en el icono del Escritorio** y la app se abre en el navegador
+
+La primera vez, macOS puede avisar que no reconoce la app. Si es el caso:
+- Haz clic derecho en el `.app` → **Abrir** → confirma
+- O ve a Ajustes del sistema → Privacidad y seguridad → permitir la app
+
+### Mac — Instalacion con Terminal
 
 ```bash
 git clone https://github.com/altaventasllc-source/transcriptor.git
@@ -35,16 +47,14 @@ cd transcriptor
 bash instalar.sh
 ```
 
-El script instala todo automaticamente: Homebrew, Python 3.12, FFmpeg, Deno, dependencias y el modelo de IA.
-
-Para ejecutar la app despues de instalar:
+Despues de instalar, para arrancar la app:
 
 ```bash
 source venv/bin/activate
 python app.py
 ```
 
-### Mac — Instalacion manual
+### Mac — Instalacion manual paso a paso
 
 ```bash
 brew install python@3.12 ffmpeg deno
