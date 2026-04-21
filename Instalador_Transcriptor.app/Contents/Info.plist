@@ -13,15 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Instalador Transcriptor</string>
-	<key>CFBundleDisplayName</key>
-	<string>Instalador Transcriptor</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.altaventas.transcriptor.installer</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>Instalador_Transcriptor</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
