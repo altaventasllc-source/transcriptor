@@ -1,6 +1,6 @@
 #!/bin/bash
-# Transcriptor - Launcher
-# Arranca el servidor Flask en una Terminal y abre el navegador
+# Launcher de Transcriptor
+# Se ejecuta desde Transcriptor.app (el que esta en el Escritorio)
 
 PROJECT_DIR="$HOME/Transcriptor"
 
@@ -16,10 +16,15 @@ if [ ! -d "$PROJECT_DIR/venv" ]; then
     exit 1
 fi
 
-# Abrir Terminal y arrancar la app
-osascript <<EOF
-tell application "Terminal"
-    activate
-    do script "clear && echo '' && echo '  Transcriptor - Iniciando...' && echo '' && cd $PROJECT_DIR && source venv/bin/activate && lsof -ti:5050 | xargs kill 2>/dev/null; sleep 1 && (sleep 3 && open http://localhost:5050) & python app.py"
-end tell
-EOF
+cd "$PROJECT_DIR"
+source venv/bin/activate
+
+# Matar cualquier proceso anterior en el puerto
+lsof -ti:5050 | xargs kill 2>/dev/null
+sleep 1
+
+# Abrir navegador después de 3 segundos
+(sleep 3 && open http://localhost:5050) &
+
+# Arrancar Flask
+python app.py

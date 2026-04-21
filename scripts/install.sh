@@ -1,6 +1,6 @@
 #!/bin/bash
 # Instalador de Transcriptor
-# Instala todas las dependencias necesarias y deja el icono en el Escritorio
+# Se ejecuta desde Instalador_Transcriptor.app
 
 clear
 echo ""
@@ -143,7 +143,6 @@ if [ -d "$INSTALL_DIR/Transcriptor.app" ]; then
         rm -rf "$DESKTOP/Transcriptor.app"
     fi
     cp -R "$INSTALL_DIR/Transcriptor.app" "$DESKTOP/"
-    # Quitar quarantine para que no salgan alertas
     xattr -dr com.apple.quarantine "$DESKTOP/Transcriptor.app" 2>/dev/null || true
     ok "Transcriptor.app creado en el Escritorio"
 else
