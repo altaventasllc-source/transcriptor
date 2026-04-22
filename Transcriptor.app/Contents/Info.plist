@@ -14,14 +14,6 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>Transcriptor</string>
-	<key>CFBundleDisplayName</key>
-	<string>Transcriptor</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.altaventas.transcriptor</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
