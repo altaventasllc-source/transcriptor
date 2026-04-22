@@ -149,16 +149,6 @@ else
     fail "No se encontro Transcriptor.app dentro del repo"
 fi
 
-# Copiar Desinstalador_Transcriptor.app al Escritorio
-if [ -d "$INSTALL_DIR/Desinstalador_Transcriptor.app" ]; then
-    if [ -d "$DESKTOP/Desinstalador_Transcriptor.app" ]; then
-        rm -rf "$DESKTOP/Desinstalador_Transcriptor.app"
-    fi
-    cp -R "$INSTALL_DIR/Desinstalador_Transcriptor.app" "$DESKTOP/"
-    xattr -dr com.apple.quarantine "$DESKTOP/Desinstalador_Transcriptor.app" 2>/dev/null || true
-    ok "Desinstalador_Transcriptor.app creado en el Escritorio"
-fi
-
 # --- Resumen final ---
 echo ""
 echo "  =========================================="
